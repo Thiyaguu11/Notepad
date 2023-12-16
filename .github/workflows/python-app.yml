@@ -29,6 +29,6 @@ jobs:
         pip install pyinstaller
     - name: Build application
       run: |
-        pwd
-        ls -R
+        cd /home/runner/work/Notepad/Notepad/base_code
+        pyinstaller notepad.py
         
