@@ -47,12 +47,83 @@ class Notepad:
         edit_menu.add_command(label="Select All", command=self.select_all)
         edit_menu.add_command(label="Zoom In", command=lambda: self.zoom_text(2))
         edit_menu.add_command(label="Zoom Out", command=lambda: self.zoom_text(0.5))
+        edit_menu.add_separator()
+        edit_menu.add_command(label="Find & Replace", command=self.replace_text)
 
         # Variable to track whether the content is modified
         self.modified = False
 
         # Binding to track modifications
         self.text_widget.bind("<Key>", self.set_modified)
+
+    def find_text(self):
+        find_dialog = tk.Toplevel(self.root)
+        find_dialog.title("Find Text")
+
+        find_label = tk.Label(find_dialog, text="Find:")
+        find_label.grid(row=0, column=0, padx=10, pady=10)
+
+        find_entry = tk.Entry(find_dialog)
+        find_entry.grid(row=0, column=1, padx=10, pady=10)
+
+        find_button = tk.Button(find_dialog, text="Find", command=lambda: self.find_occurrences(find_entry.get()))
+        find_button.grid(row=0, column=2, padx=10, pady=10)
+
+        def on_close():
+            find_dialog.destroy()
+
+        find_dialog.protocol("WM_DELETE_WINDOW", on_close)
+
+    def find_occurrences(self, search_term):
+        start_index = "1.0"
+        count = tk.IntVar()
+        content = self.text_widget.get(start_index, tk.END)
+        index = content.find(search_term, count.get())
+
+        while index != -1:
+            end_index = f"{start_index}+{index}c"
+            self.text_widget.tag_add(tk.SEL, start_index, end_index)
+            start_index = end_index
+            content = self.text_widget.get(start_index, tk.END)
+            index = content.find(search_term, count.get())
+
+        if tk.SEL not in self.text_widget.tag_ranges(tk.SEL):
+            messagebox.showinfo("Find", "No more occurrences found.")
+            self.text_widget.tag_remove(tk.SEL, "1.0", tk.END)
+        else:
+            self.text_widget.mark_set(tk.SEL_FIRST, self.text_widget.index(tk.SEL_FIRST))
+            self.text_widget.mark_set(tk.SEL_LAST, self.text_widget.index(tk.SEL_LAST))
+            self.text_widget.see(tk.SEL_FIRST)
+
+
+    def replace_text(self):
+        replace_dialog = tk.Toplevel(self.root)
+        replace_dialog.title("Replace Text")
+
+        find_label = tk.Label(replace_dialog, text="Find:")
+        find_label.grid(row=0, column=0, padx=10, pady=10)
+
+        find_entry = tk.Entry(replace_dialog)
+        find_entry.grid(row=0, column=1, padx=10, pady=10)
+
+        replace_label = tk.Label(replace_dialog, text="Replace with:")
+        replace_label.grid(row=1, column=0, padx=10, pady=10)
+
+        replace_entry = tk.Entry(replace_dialog)
+        replace_entry.grid(row=1, column=1, padx=10, pady=10)
+
+        replace_button = tk.Button(replace_dialog, text="Replace", command=lambda: self.replace_occurrences(find_entry.get(), replace_entry.get()))
+        replace_button.grid(row=0, column=2, padx=10, pady=10)
+
+    def replace_occurrences(self, search_term, replace_term):
+        start_index = self.text_widget.search(search_term, 1.0, tk.END)
+
+        while start_index:
+            end_index = f"{start_index}+{len(search_term)}c"
+            self.text_widget.delete(start_index, end_index)
+            self.text_widget.insert(start_index, replace_term)
+
+            start_index = self.text_widget.search(search_term, end_index, tk.END)
 
     def set_modified(self, event):
         self.modified = True
