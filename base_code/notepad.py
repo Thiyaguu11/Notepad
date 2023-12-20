@@ -50,11 +50,30 @@ class Notepad:
         edit_menu.add_separator()
         edit_menu.add_command(label="Find & Replace", command=self.replace_text)
 
+        # View menu
+        view_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="View", menu=view_menu)
+        view_menu.add_separator()
+        view_menu.add_command(label="Word Count", command=self.word_count)
+
         # Variable to track whether the content is modified
         self.modified = False
 
         # Binding to track modifications
         self.text_widget.bind("<Key>", self.set_modified)
+
+    def word_count(self):
+        content = self.text_widget.get("1.0", tk.END)
+        words = content.split()
+        lines = content.splitlines()
+
+        word_count = len(words)
+        character_count = len(content)
+        line_count = len(lines)
+
+        count_message = f"Word Count: {word_count}\nCharacter Count: {character_count}\nLine Count: {line_count}"
+
+        messagebox.showinfo("Word Count", count_message)
 
     def find_text(self):
         find_dialog = tk.Toplevel(self.root)
