@@ -32,37 +32,54 @@ class Notepad:
         self.menu_bar = tk.Menu(self.root)
         self.root.config(menu=self.menu_bar)
 
-        # File menu
+       # File menu
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="New", command=self.new_file)
-        file_menu.add_command(label="Open", command=self.open_file)
-        file_menu.add_command(label="Save", command=self.save_file)
-        file_menu.add_command(label="Save As", command=self.save_as_file)
+        file_menu.add_command(label="New", command=self.new_file, accelerator="Ctrl+N")
+        file_menu.add_command(label="Open", command=self.open_file, accelerator="Ctrl+O")
+        file_menu.add_command(label="Save", command=self.save_file, accelerator="Ctrl+S")
+        file_menu.add_command(label="Save As", command=self.save_as_file, accelerator="Ctrl+Shift+S")
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.exit_application)
+        file_menu.add_command(label="Exit", command=self.exit_application, accelerator="Alt+F4")
 
         # Edit menu
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
-        edit_menu.add_command(label="Undo", command=self.undo)
-        edit_menu.add_command(label="Redo", command=self.redo)
+        edit_menu.add_command(label="Undo", command=self.undo, accelerator="Ctrl+Z")
+        edit_menu.add_command(label="Redo", command=self.redo, accelerator="Ctrl+Y")
         edit_menu.add_separator()
-        edit_menu.add_command(label="Cut", command=self.cut)
-        edit_menu.add_command(label="Copy", command=self.copy)
-        edit_menu.add_command(label="Paste", command=self.paste)
+        edit_menu.add_command(label="Cut", command=self.cut, accelerator="Ctrl+X")
+        edit_menu.add_command(label="Copy", command=self.copy, accelerator="Ctrl+C")
+        edit_menu.add_command(label="Paste", command=self.paste, accelerator="Ctrl+V")
         edit_menu.add_separator()
-        edit_menu.add_command(label="Select All", command=self.select_all)
-        edit_menu.add_command(label="Zoom In", command=lambda: self.zoom_text(2))
-        edit_menu.add_command(label="Zoom Out", command=lambda: self.zoom_text(0.5))
+        edit_menu.add_command(label="Select All", command=self.select_all, accelerator="Ctrl+A")
+        edit_menu.add_command(label="Zoom In", command=lambda: self.zoom_text(2), accelerator="Ctrl++")
+        edit_menu.add_command(label="Zoom Out", command=lambda: self.zoom_text(0.5), accelerator="Ctrl+-")
         edit_menu.add_separator()
-        edit_menu.add_command(label="Find & Replace", command=self.replace_text)
+        edit_menu.add_command(label="Find & Replace", command=self.replace_text, accelerator="Ctrl+F")
 
         # View menu
         view_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="View", menu=view_menu)
         view_menu.add_separator()
-        view_menu.add_command(label="Word Count", command=self.word_count)
+        view_menu.add_command(label="Word Count", command=self.word_count, accelerator="Ctrl+W")
+
+        # Bind keyboard shortcuts
+        self.root.bind("<Control-o>", self.open_file)
+        self.root.bind("<Control-n>", self.new_file)
+        self.root.bind("<Control-s>", self.save_file)
+        self.root.bind("<Control-Shift-s>", self.save_as_file)
+        self.root.bind("<Alt-F4>", self.exit_application)
+        self.root.bind("<Control-z>", self.undo)
+        self.root.bind("<Control-y>", self.redo)
+        self.root.bind("<Control-x>", self.cut)
+        self.root.bind("<Control-c>", self.copy)
+        self.root.bind("<Control-v>", self.paste)
+        self.root.bind("<Control-a>", self.select_all)
+        self.root.bind("<Control-w>", self.word_count)
+        self.root.bind("<Control-f>", self.replace_text)
+        self.root.bind("<Control-plus>", lambda event: self.zoom_text(2))
+        self.root.bind("<Control-minus>", lambda event: self.zoom_text(0.5))
 
         # Variable to track whether the content is modified
         self.modified = False
@@ -76,7 +93,7 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function for word count =======================
-    def word_count(self):
+    def word_count(self, event=None):
         content = self.text_widget.get("1.0", tk.END)
         words = content.split()
         lines = content.splitlines()
@@ -91,7 +108,7 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function for find text =======================
-    def find_text(self):
+    def find_text(self, event=None):
         find_dialog = tk.Toplevel(self.root)
         find_dialog.title("Find Text")
 
@@ -134,7 +151,7 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function for replace text ======================
-    def replace_text(self):
+    def replace_text(self, event=None):
         replace_dialog = tk.Toplevel(self.root)
         replace_dialog.title("Replace Text")
 
@@ -178,7 +195,7 @@ class Notepad:
     def on_text_configure(self, event):
         self.update_line_numbers()
 
-    def update_line_numbers(self):
+    def update_line_numbers(self, event=None):
         lines = self.text_widget.get("1.0", tk.END).split("\n")
         line_count = len(lines)
         line_numbers_text = "\n".join(str(i) for i in range(1, line_count + 1))
@@ -215,7 +232,7 @@ class Notepad:
         return "break"
     # ===================================== End of Function =====================================
 
-    def update_status_bar(self):
+    def update_status_bar(self, event=None):
         if self.text_changed:
             self.status_bar.config(text="Unsaved Changes")
         else:
@@ -223,7 +240,7 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function to create new file  ======================
-    def new_file(self):
+    def new_file(self, event=None):
         self.text_widget.delete(1.0, tk.END)
         if self.modified:
             response = messagebox.askyesnocancel("Save Changes", "Do you want to save changes before creating a new file?")
@@ -237,7 +254,7 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function to open a file ======================
-    def open_file(self):
+    def open_file(self, event=None):
         if self.modified:
             response = messagebox.askyesnocancel("Save Changes", "Do you want to save changes before opening a new file?")
             if response is None:
@@ -256,7 +273,7 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function to save a saved file ======================
-    def save_file(self):
+    def save_file(self, event=None):
         if not self.modified:
             return
 
@@ -269,7 +286,7 @@ class Notepad:
     # ===================================== End of Function =====================================
     
     # ======================= Function to save a new file ======================
-    def save_as_file(self):
+    def save_as_file(self, event=None):
         self.save_file()
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
         if file_path:
@@ -281,7 +298,7 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function to close notepad  ======================
-    def exit_application(self):
+    def exit_application(self, event=None):
         if self.modified:
             response = messagebox.askyesnocancel("Save Changes", "Do you want to save changes before exiting?")
             if response is None:
@@ -292,7 +309,7 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function to undo  ======================
-    def undo(self):
+    def undo(self, event=None):
         try:
             self.text_widget.edit_undo()
         except tk.TclError:
@@ -308,17 +325,17 @@ class Notepad:
     # ===================================== End of Function =====================================
 
     # ======================= Function to cut ======================
-    def cut(self):
+    def cut(self, event=None):
         self.text_widget.event_generate("<<Cut>>")
     # ===================================== End of Function =====================================
 
     # ======================= Function to copy  ======================
-    def copy(self):
+    def copy(self, event=None):
         self.text_widget.event_generate("<<Copy>>")
     # ===================================== End of Function =====================================
 
     # ======================= Function to paste ======================
-    def paste(self):
+    def paste(self, event=None):
         self.text_widget.event_generate("<<Paste>>")
     # ===================================== End of Function =====================================
 
@@ -330,7 +347,7 @@ class Notepad:
             self.text_widget.configure(font=new_font)
     # ===================================== End of Function =====================================
 
-    def select_all(self):
+    def select_all(self, event=None):
         self.text_widget.tag_add(tk.SEL, "1.0", tk.END)
         self.text_widget.mark_set(tk.SEL_FIRST, "1.0")
         self.text_widget.mark_set(tk.SEL_LAST, tk.END)
