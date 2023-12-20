@@ -1,0 +1,32 @@
+Find and Replace:
+Allow users to search for a specific string in the text and optionally replace it with another.
+
+Word Count:
+  Implement a feature to count the number of words, characters, and lines in the document.
+
+Syntax Highlighting:
+  Add syntax highlighting for different programming languages to make it more versatile for code editing.
+
+Themes:
+  Provide different color themes for the editor to give users the option to customize the appearance.
+
+Print Functionality:
+  Allow users to print the content of the text editor.
+
+Spell Checking:
+  Integrate a spell-checking feature to help users identify and correct spelling errors.
+
+Auto-indentation:
+  Implement automatic indentation for code files to improve code readability.
+
+Tabs and Multiple Windows:
+  Support multiple tabs or windows for users to work on multiple documents simultaneously.
+
+Markdown Preview:
+  If you want to make it more versatile, consider adding a preview functionality for Markdown documents.
+
+File History:
+  Keep a history of recently opened files to make it easy for users to access recent documents.
+
+Drag and Drop File Opening:
+  Allow users to open files by dragging and dropping them onto the Notepad window.
