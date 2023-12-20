@@ -7,8 +7,19 @@ class Notepad:
         self.root.title("Notepad")
         self.root.geometry("600x400")
 
+        # Status bar
+        self.status_bar = tk.Label(self.root, text="Ready", bd=1, relief=tk.SUNKEN, anchor=tk.W)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # Track changes
+        self.file_path = None
+        self.text_changed = False
+
         self.text_widget = tk.Text(self.root, wrap="word", undo=True)
         self.text_widget.pack(expand=True, fill="both")
+
+        # Bind the event after creating self.text_widget
+        self.text_widget.bind("<Key>", self.on_text_change)
 
         self.menu_bar = tk.Menu(self.root)
         self.root.config(menu=self.menu_bar)
@@ -21,7 +32,7 @@ class Notepad:
         file_menu.add_command(label="Save", command=self.save_file)
         file_menu.add_command(label="Save As", command=self.save_as_file)
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.root.destroy)
+        file_menu.add_command(label="Exit", command=self.exit_application)
 
         # Edit menu
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
@@ -34,11 +45,48 @@ class Notepad:
         edit_menu.add_command(label="Paste", command=self.paste)
         edit_menu.add_separator()
         edit_menu.add_command(label="Select All", command=self.select_all)
+        edit_menu.add_command(label="Zoom In", command=lambda: self.zoom_text(2))
+        edit_menu.add_command(label="Zoom Out", command=lambda: self.zoom_text(0.5))
+
+        # Variable to track whether the content is modified
+        self.modified = False
+
+        # Binding to track modifications
+        self.text_widget.bind("<Key>", self.set_modified)
+
+    def set_modified(self, event):
+        self.modified = True
+
+    def on_text_change(self, event):
+        self.text_changed = True
+        self.update_status_bar()
+
+    def update_status_bar(self):
+        if self.text_changed:
+            self.status_bar.config(text="Unsaved Changes")
+        else:
+            self.status_bar.config(text="Ready")
 
     def new_file(self):
         self.text_widget.delete(1.0, tk.END)
+        if self.modified:
+            response = messagebox.askyesnocancel("Save Changes", "Do you want to save changes before creating a new file?")
+            if response is None:
+                return
+            elif response:
+                self.save_file()
+
+        self.text_widget.delete(1.0, tk.END)
+        self.modified = False
 
     def open_file(self):
+        if self.modified:
+            response = messagebox.askyesnocancel("Save Changes", "Do you want to save changes before opening a new file?")
+            if response is None:
+                return
+            elif response:
+                self.save_file()
+
         file_path = filedialog.askopenfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
         if file_path:
             with open(file_path, "r") as file:
@@ -46,8 +94,12 @@ class Notepad:
                 self.text_widget.delete(1.0, tk.END)
                 self.text_widget.insert(tk.END, content)
             self.root.title(f"Notepad - {file_path}")
+            self.modified = False
 
     def save_file(self):
+        if not self.modified:
+            return
+
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
         if file_path:
             with open(file_path, "w") as file:
@@ -57,6 +109,22 @@ class Notepad:
 
     def save_as_file(self):
         self.save_file()
+        file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        if file_path:
+            with open(file_path, "w") as file:
+                content = self.text_widget.get(1.0, tk.END)
+                file.write(content)
+            self.root.title(f"Notepad - {file_path}")
+            self.modified = False
+    
+    def exit_application(self):
+        if self.modified:
+            response = messagebox.askyesnocancel("Save Changes", "Do you want to save changes before exiting?")
+            if response is None:
+                return
+            elif response:
+                self.save_file()
+        self.root.destroy()
 
     def undo(self):
         try:
@@ -78,12 +146,20 @@ class Notepad:
 
     def paste(self):
         self.text_widget.event_generate("<<Paste>>")
+    
+    def zoom_text(self, factor):
+            current_font = self.text_widget.cget("font")
+            font_size = int(current_font.split(" ")[-1])
+            new_font_size = max(8, min(48, int(font_size * factor)))
+            new_font = current_font.replace(str(font_size), str(new_font_size))
+            self.text_widget.configure(font=new_font)
 
     def select_all(self):
         self.text_widget.tag_add(tk.SEL, "1.0", tk.END)
         self.text_widget.mark_set(tk.SEL_FIRST, "1.0")
         self.text_widget.mark_set(tk.SEL_LAST, tk.END)
         self.text_widget.see(tk.SEL_FIRST)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
