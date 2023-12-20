@@ -7,6 +7,9 @@ class Notepad:
         self.root.title("Notepad")
         self.root.geometry("600x400")
 
+        # Set the default indentation level (customize as needed)
+        self.default_indentation = 4
+
         # Status bar
         self.status_bar = tk.Label(self.root, text="Ready", bd=1, relief=tk.SUNKEN, anchor=tk.W)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
@@ -25,7 +28,6 @@ class Notepad:
         # Bind the event after creating self.text_widget
         self.text_widget.bind("<Key>", self.on_text_change)
         self.text_widget.bind("<Configure>", self.on_text_configure)
-        self.text_widget.bind("<Return>", self.on_text_change)  # Bind Return key event
 
         self.menu_bar = tk.Menu(self.root)
         self.root.config(menu=self.menu_bar)
@@ -67,6 +69,10 @@ class Notepad:
 
         # Binding to track modifications
         self.text_widget.bind("<Key>", self.set_modified)
+
+        # Bind the "Return" key event for auto-indentation
+        self.text_widget.bind("<Return>", self.on_return_key)
+
     # ===================================== End of Function =====================================
 
     # ======================= Function for word count =======================
@@ -182,6 +188,32 @@ class Notepad:
         self.line_number_bar.config(state="disabled")
     # ===================================== End of Function =====================================
 
+    def on_return_key(self, event):
+        current_line = self.text_widget.get("insert linestart", "insert lineend")
+        leading_spaces = len(current_line) - len(current_line.lstrip())
+
+        # Check if the previous line ends with ":"
+        prev_line_number = int(self.text_widget.index("insert").split(".")[0]) - 1
+        prev_line = self.text_widget.get(f"{prev_line_number}.0", f"{prev_line_number}.end").strip()
+        indent_char = " " * self.default_indentation
+
+        # Not sure why when ';' is used it is recognised ad ':', so used ';' below
+        if prev_line.endswith(";"):
+            # Use the default_indentation if the current line has no leading spaces
+            indentation = leading_spaces + self.default_indentation
+        else:
+            # Use the same indentation as the previous line if it doesn't end with ":"
+            indentation = leading_spaces
+
+        # Insert a new line with the specified indentation
+        self.text_widget.insert("insert", "\n" + " " * indentation)
+
+        # Call the on_text_change function after auto-indentation
+        self.on_text_change(event)
+
+        # Prevent default behavior (new line insertion) from occurring
+        return "break"
+    # ===================================== End of Function =====================================
 
     def update_status_bar(self):
         if self.text_changed:
