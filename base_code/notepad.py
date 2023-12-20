@@ -15,11 +15,17 @@ class Notepad:
         self.file_path = None
         self.text_changed = False
 
+        # Main text and line number bar
         self.text_widget = tk.Text(self.root, wrap="word", undo=True)
-        self.text_widget.pack(expand=True, fill="both")
+        self.text_widget.pack(expand=True, fill="both", side=tk.RIGHT)
+
+        self.line_number_bar = tk.Text(self.root, width=4, wrap="none", takefocus=0, border=0, background="#f0f0f0", state="disabled")
+        self.line_number_bar.pack(side=tk.LEFT, fill=tk.Y)
 
         # Bind the event after creating self.text_widget
         self.text_widget.bind("<Key>", self.on_text_change)
+        self.text_widget.bind("<Configure>", self.on_text_configure)
+        self.text_widget.bind("<Return>", self.on_text_change)  # Bind Return key event
 
         self.menu_bar = tk.Menu(self.root)
         self.root.config(menu=self.menu_bar)
@@ -61,7 +67,9 @@ class Notepad:
 
         # Binding to track modifications
         self.text_widget.bind("<Key>", self.set_modified)
+    # ===================================== End of Function =====================================
 
+    # ======================= Function for word count =======================
     def word_count(self):
         content = self.text_widget.get("1.0", tk.END)
         words = content.split()
@@ -74,7 +82,9 @@ class Notepad:
         count_message = f"Word Count: {word_count}\nCharacter Count: {character_count}\nLine Count: {line_count}"
 
         messagebox.showinfo("Word Count", count_message)
+    # ===================================== End of Function =====================================
 
+    # ======================= Function for find text =======================
     def find_text(self):
         find_dialog = tk.Toplevel(self.root)
         find_dialog.title("Find Text")
@@ -92,7 +102,9 @@ class Notepad:
             find_dialog.destroy()
 
         find_dialog.protocol("WM_DELETE_WINDOW", on_close)
+    # ===================================== End of Function =====================================
 
+    # ======================= Function for find occurrences ======================
     def find_occurrences(self, search_term):
         start_index = "1.0"
         count = tk.IntVar()
@@ -113,8 +125,9 @@ class Notepad:
             self.text_widget.mark_set(tk.SEL_FIRST, self.text_widget.index(tk.SEL_FIRST))
             self.text_widget.mark_set(tk.SEL_LAST, self.text_widget.index(tk.SEL_LAST))
             self.text_widget.see(tk.SEL_FIRST)
+    # ===================================== End of Function =====================================
 
-
+    # ======================= Function for replace text ======================
     def replace_text(self):
         replace_dialog = tk.Toplevel(self.root)
         replace_dialog.title("Replace Text")
@@ -133,7 +146,9 @@ class Notepad:
 
         replace_button = tk.Button(replace_dialog, text="Replace", command=lambda: self.replace_occurrences(find_entry.get(), replace_entry.get()))
         replace_button.grid(row=0, column=2, padx=10, pady=10)
+    # ===================================== End of Function =====================================
 
+    # ======================= Function for replace occurrences ======================
     def replace_occurrences(self, search_term, replace_term):
         start_index = self.text_widget.search(search_term, 1.0, tk.END)
 
@@ -143,20 +158,39 @@ class Notepad:
             self.text_widget.insert(start_index, replace_term)
 
             start_index = self.text_widget.search(search_term, end_index, tk.END)
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to check if text is modified or not ======================
     def set_modified(self, event):
         self.modified = True
 
     def on_text_change(self, event):
         self.text_changed = True
         self.update_status_bar()
+        self.update_line_numbers()
+
+    def on_text_configure(self, event):
+        self.update_line_numbers()
+
+    def update_line_numbers(self):
+        lines = self.text_widget.get("1.0", tk.END).split("\n")
+        line_count = len(lines)
+        line_numbers_text = "\n".join(str(i) for i in range(1, line_count + 1))
+        self.line_number_bar.config(state="normal")
+        self.line_number_bar.delete("1.0", tk.END)
+        self.line_number_bar.insert(tk.END, line_numbers_text)
+        self.line_number_bar.config(state="disabled")
+    # ===================================== End of Function =====================================
+
 
     def update_status_bar(self):
         if self.text_changed:
             self.status_bar.config(text="Unsaved Changes")
         else:
             self.status_bar.config(text="Ready")
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to create new file  ======================
     def new_file(self):
         self.text_widget.delete(1.0, tk.END)
         if self.modified:
@@ -168,7 +202,9 @@ class Notepad:
 
         self.text_widget.delete(1.0, tk.END)
         self.modified = False
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to open a file ======================
     def open_file(self):
         if self.modified:
             response = messagebox.askyesnocancel("Save Changes", "Do you want to save changes before opening a new file?")
@@ -185,7 +221,9 @@ class Notepad:
                 self.text_widget.insert(tk.END, content)
             self.root.title(f"Notepad - {file_path}")
             self.modified = False
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to save a saved file ======================
     def save_file(self):
         if not self.modified:
             return
@@ -196,7 +234,9 @@ class Notepad:
                 content = self.text_widget.get(1.0, tk.END)
                 file.write(content)
             self.root.title(f"Notepad - {file_path}")
-
+    # ===================================== End of Function =====================================
+    
+    # ======================= Function to save a new file ======================
     def save_as_file(self):
         self.save_file()
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
@@ -206,7 +246,9 @@ class Notepad:
                 file.write(content)
             self.root.title(f"Notepad - {file_path}")
             self.modified = False
-    
+    # ===================================== End of Function =====================================
+
+    # ======================= Function to close notepad  ======================
     def exit_application(self):
         if self.modified:
             response = messagebox.askyesnocancel("Save Changes", "Do you want to save changes before exiting?")
@@ -215,41 +257,53 @@ class Notepad:
             elif response:
                 self.save_file()
         self.root.destroy()
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to undo  ======================
     def undo(self):
         try:
             self.text_widget.edit_undo()
         except tk.TclError:
             pass
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to redo ======================
     def redo(self):
         try:
             self.text_widget.edit_redo()
         except tk.TclError:
             pass
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to cut ======================
     def cut(self):
         self.text_widget.event_generate("<<Cut>>")
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to copy  ======================
     def copy(self):
         self.text_widget.event_generate("<<Copy>>")
+    # ===================================== End of Function =====================================
 
+    # ======================= Function to paste ======================
     def paste(self):
         self.text_widget.event_generate("<<Paste>>")
-    
+    # ===================================== End of Function =====================================
+
     def zoom_text(self, factor):
             current_font = self.text_widget.cget("font")
             font_size = int(current_font.split(" ")[-1])
             new_font_size = max(8, min(48, int(font_size * factor)))
             new_font = current_font.replace(str(font_size), str(new_font_size))
             self.text_widget.configure(font=new_font)
+    # ===================================== End of Function =====================================
 
     def select_all(self):
         self.text_widget.tag_add(tk.SEL, "1.0", tk.END)
         self.text_widget.mark_set(tk.SEL_FIRST, "1.0")
         self.text_widget.mark_set(tk.SEL_LAST, tk.END)
         self.text_widget.see(tk.SEL_FIRST)
-
+    # ===================================== End of Function =====================================
 
 if __name__ == "__main__":
     root = tk.Tk()
