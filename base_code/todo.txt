@@ -1,5 +1,6 @@
 Find and Replace:
 Allow users to search for a specific string in the text and optionally replace it with another.
+Replace/Replace all feature
 
 Word Count:
   Implement a feature to count the number of words, characters, and lines in the document.
