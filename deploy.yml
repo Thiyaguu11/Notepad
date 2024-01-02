@@ -25,7 +25,7 @@
         name: pyinstaller
 
     - name: Build Python Application
-      command: "pyinstaller --onefile Notepad/base_code/puffpad.py"
+      command: "pyinstaller --onefile base_code/puffpad.py"
 
     - name: Build Docker Image
       command: "docker build -t puffpad:{{ commit_id }} Notepad/"
