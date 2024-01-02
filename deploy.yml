@@ -28,7 +28,7 @@
       command: "ls"
       
     - name: Build Python Application
-      command: "pyinstaller --onefile /jidoka_build/Notepad/base_code/puffpad.py"
+      command: "pyinstaller --onefile/home/runner/work/Notepad/Notepad/base_code/puffpad.py"
 
     - name: Build Docker Image
       command: "docker build -t puffpad:{{ commit_id }} Notepad/"
