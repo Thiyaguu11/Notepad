@@ -30,7 +30,8 @@
     - name: Build Python Application
       command: "pyinstaller --onefile /home/runner/work/Notepad/Notepad/base_code/puffpad.py"
       args:
-          chdir: "/home/runner/work/Notepad/Notepad/base_code
+          chdir: "/home/runner/work/Notepad/Notepad/base_code"
+      
     - name: Build Docker Image
       command: "docker build -t puffpad:{{ commit_id }} Notepad/"
 
