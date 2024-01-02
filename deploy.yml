@@ -1,0 +1,34 @@
+---
+- name: Deploy Python Application
+  hosts: localhost
+  become: true
+  gather_facts: false
+
+  vars:
+    commit_id: "{{ lookup('env', 'GITHUB_SHA') }}"
+
+  tasks:
+    - name: Clone Repository
+      git:
+        repo: "https://github.com/Thiyaguu11/Notepad.git"
+        dest: Notepad/
+
+    - name: Set commit_id from environment variable
+      set_fact:
+        commit_id: "{{ lookup('env', 'GITHUB_SHA') | default(lookup('env', 'GITHUB_REF') | regex_replace('^refs/heads/', '') | default('unknown_branch')) }}"
+
+    - name: Set up Python 3.10
+      raw: sudo apt-get install -y python3.10
+
+    - name: Install Dependency
+      pip:
+        name: pyinstaller
+
+    - name: Build Python Application
+      command: "pyinstaller --onefile Notepad/base_code/puffpad.py"
+
+    - name: Build Docker Image
+      command: "docker build -t puffpad:{{ commit_id }} Notepad/"
+
+    - name: Build Docker Image
+      command: "docker build -t puffpad:{{ commit_id }} Notepad/"
