@@ -10,6 +10,6 @@ COPY . /app
 RUN pip install --upgrade pip
 RUN pip install pyinstaller
 
-RUN pyinstaller --onefile puffpad.py
+RUN pyinstaller --onefile base_code/puffpad.py
 
 CMD ["./dist/puffpad"]
