@@ -37,3 +37,6 @@
 
     - name: Build Docker Image
       command: "docker build -t puffpad:{{ commit_id }} Notepad/"
+
+
+
